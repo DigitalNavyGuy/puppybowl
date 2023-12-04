@@ -1,10 +1,14 @@
 const playerContainer = document.getElementById('all-players-container');
 const newPlayerFormContainer = document.getElementById('new-player-form');
 
+const state = {
+    players: []
+}
+
 // Add your cohort name to the cohortName variable below, replacing the 'COHORT-NAME' placeholder
 const cohortName = '2310-FSA-ET-WEB-PT-SF';
 // Use the APIURL variable for fetch requests
-const APIURL = `https://fsa-puppy-bowl.herokuapp.com/api/${cohortName}/`;
+const APIURL = `https://fsa-puppy-bowl.herokuapp.com/api/${cohortName}`;
 
 /**
  * It fetches all players from the API and returns them
@@ -12,9 +16,13 @@ const APIURL = `https://fsa-puppy-bowl.herokuapp.com/api/${cohortName}/`;
  */
 const fetchAllPlayers = async () => {
     try {
-        const response = await fetch(`${APIURL}players`);
+        const response = await fetch(`${APIURL}/players`);
+        if(!response.ok){
+            throw new Error("Fetch failed fetch all players.")
+        }
         const result = await response.json();
         console.log(result);
+        return result;
 
     } catch (err) {
         console.error('Uh oh, trouble fetching players!', err);
@@ -23,7 +31,10 @@ const fetchAllPlayers = async () => {
 
 const fetchSinglePlayer = async (playerId) => {
     try {
-        const response = await fetch(`${APIURL}players/${playerId}`);
+        const response = await fetch(`${APIURL}/players/${playerId}`);
+        if(!response.ok){
+            throw new Error("Fetch failed to fetch player.")
+        }
         const result = await response.json();
         console.log(result);
 
@@ -35,7 +46,7 @@ const fetchSinglePlayer = async (playerId) => {
 
 const addNewPlayer = async (playerObj) => {
     try {
-        const response = await fetch(`${APIURL}players`, {
+        const response = await fetch(`${APIURL}/players`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
@@ -59,13 +70,16 @@ const addNewPlayer = async (playerObj) => {
 
 
 const removePlayer = async (playerId) => {
-    fetch(`${APIURL}players`, {
+    fetch(`${APIURL}/players`, {
         method: "DELETE",
     });
     try {
-        const respponse = await fetch(`${APIURL}players/${playerId}`, {
+        const response = await fetch(`${APIURL}/players/${playerId}`, {
             method: "DELETE",
         });
+        if(!response.ok){
+            throw new Error("Fetch failed to remove player.")
+        }
         const result = await response.json();
         console.log(result);
     } catch (err) {
@@ -99,6 +113,11 @@ const removePlayer = async (playerId) => {
     */
    const renderAllPlayers = (playerList) => {
        try {
+        const container = document.createElement("container");
+        const playerList = state.players;
+
+        container.append(playerList);
+        playerContainer.append(container);
            
     } catch (err) {
         console.error('Uh oh, trouble rendering players!', err);
@@ -112,7 +131,24 @@ const removePlayer = async (playerId) => {
 */
 const renderNewPlayerForm = () => {
     try {
+        const form = document.createElement("form");
+        const nameLabel = document.createElement("label");
+        const nameInput = document.createElement("input");
+        const breedLabel = document.createElement("label");
+        const breedInput = document.createElement("input");
+        const button = document.createElement("button");
         
+        nameLabel.innerText = "Player Name";
+        breedLabel.innerText = "Breed";
+        button.innerText = "Submit";
+
+        button.addEventListener('click', (e) => {
+            addNewPlayer();
+        })
+
+        form.append(nameLabel,  nameInput, breedLabel,breedInput, button);
+        newPlayerFormContainer.append(form);
+
     } catch (err) {
         console.error('Uh oh, trouble rendering the new player form!', err);
     }
@@ -120,6 +156,7 @@ const renderNewPlayerForm = () => {
 
 const init = async () => {
     const players = await fetchAllPlayers();
+    state.players = players;
     renderAllPlayers(players);
     
     renderNewPlayerForm();
@@ -129,4 +166,4 @@ const init = async () => {
 // fetchSinglePlayer(6478);
 // addNewPlayer();
 // removePlayer(6475);
-// init();
+init();
